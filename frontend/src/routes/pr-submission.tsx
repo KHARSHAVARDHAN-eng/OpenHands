@@ -118,9 +118,20 @@ export default function PRSubmission() {
     checks,
   } = status;
 
-  // Construct URLs
+  // Construct URLs with issue context query parameters
+  const issueNum = status.issue?.issue_number || 15117;
+  const prTitle = `fix(settings): reject unsupported LLM fields in settings and enterprise org updates`;
+  const prBody = `## Summary
+This PR validates incoming settings updates using \`StrictLLM\` before merging. It rejects unsupported fields (such as \`is_subscription\` and other unknown keys) by returning HTTP 422 instead of silently ignoring/accepting them.
+
+This covers both the personal settings endpoint and the enterprise organization settings endpoint.
+
+Fixes #${issueNum}
+
+- [x] A human has tested these changes.`;
+
   const compareUrl = `https://github.com/${upstream_owner}/${repo}/compare/main...${fork_owner}:${branch}`;
-  const prUrl = `${compareUrl}?expand=1`;
+  const prUrl = `${compareUrl}?expand=1&title=${encodeURIComponent(prTitle)}&body=${encodeURIComponent(prBody)}`;
 
   // Verification requirements validation
   const allChecksPassed = Object.values(checks).every((c) => c === "Passed");
@@ -178,6 +189,55 @@ export default function PRSubmission() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Status Card */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Issue Tracking Card */}
+          {status.issue && (
+            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div className="flex justify-between items-center border-b border-neutral-800 pb-2">
+                <h2 className="text-sm font-semibold text-neutral-300 uppercase tracking-wider">
+                  Current Issue
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => window.open(status.issue.issue_url, "_blank")}
+                  className="px-3 py-1 text-xs font-semibold rounded bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 text-neutral-100 transition-all"
+                >
+                  Open Issue
+                </button>
+              </div>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <span className="text-neutral-500 text-xs block">
+                    Issue Number
+                  </span>
+                  <span className="font-mono text-neutral-200 bg-neutral-950 px-2 py-1 rounded border border-neutral-850 inline-block mt-1">
+                    #{status.issue.issue_number}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-neutral-500 text-xs block">
+                    Issue Title
+                  </span>
+                  <p className="text-neutral-200 font-medium mt-0.5">
+                    {status.issue.issue_title}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-neutral-500 text-xs block">
+                    Issue URL
+                  </span>
+                  <a
+                    href={status.issue.issue_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline break-all block mt-0.5"
+                  >
+                    {status.issue.issue_url}
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 shadow-sm space-y-4">
             <h2 className="text-sm font-semibold text-neutral-300 uppercase tracking-wider">
               Git Repository Info
@@ -318,16 +378,87 @@ export default function PRSubmission() {
       {/* Ready Status / Action Buttons */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 shadow-sm space-y-4">
         {isReady ? (
-          <div className="flex items-center gap-3 bg-green-950/40 border border-green-800/60 rounded-lg p-4">
-            <span className="text-green-500 text-xl font-bold">🟢</span>
-            <div>
-              <h3 className="font-semibold text-green-400 text-sm">
-                Ready for Pull Request
-              </h3>
-              <p className="text-xs text-green-500/80 mt-0.5">
-                All pre-validation checks are passing perfectly. You can proceed
-                to submit.
-              </p>
+          <div className="bg-green-950/40 border border-green-800/60 rounded-lg p-5 space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="text-green-500 text-xl font-bold">🟢</span>
+              <div>
+                <h3 className="font-semibold text-green-400 text-sm">
+                  Ready for Pull Request
+                </h3>
+                <p className="text-xs text-green-500/80 mt-0.5">
+                  All pre-validation checks are passing perfectly.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-neutral-300 pt-3 border-t border-green-900/40">
+              <div className="flex items-center gap-1.5">
+                <span className="text-green-500 font-bold">✓</span>
+                <span className="font-medium text-neutral-400">
+                  Current Branch:
+                </span>
+                <span className="font-mono text-neutral-200">{branch}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-green-500 font-bold">✓</span>
+                <span className="font-medium text-neutral-400">
+                  Latest Commit:
+                </span>
+                <span className="font-mono text-neutral-200">
+                  {sha.substring(0, 8)}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-green-500 font-bold">✓</span>
+                <span className="font-medium text-neutral-400">
+                  Compare URL:
+                </span>
+                <a
+                  href={compareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 underline hover:text-blue-300 truncate max-w-[250px]"
+                >
+                  Link
+                </a>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-green-500 font-bold">✓</span>
+                <span className="font-medium text-neutral-400">PR URL:</span>
+                <a
+                  href={prUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 underline hover:text-blue-300 truncate max-w-[250px]"
+                >
+                  Link
+                </a>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-green-500 font-bold">✓</span>
+                <span className="font-medium text-neutral-400">
+                  Files Changed:
+                </span>
+                <span className="text-neutral-200">
+                  {files_changed.length} file(s)
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-green-500 font-bold">✓</span>
+                <span className="font-medium text-neutral-400">
+                  Commits Ahead:
+                </span>
+                <span className="text-neutral-200">{commits_ahead}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-green-500 font-bold">✓</span>
+                <span className="font-medium text-neutral-400">
+                  CI Readiness:
+                </span>
+                <span className="text-neutral-200">
+                  {allChecksPassed ? "Passed" : "Pending"}
+                </span>
+              </div>
             </div>
           </div>
         ) : (

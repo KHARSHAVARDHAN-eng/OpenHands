@@ -9,6 +9,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Annotated
 
 from fastapi import APIRouter, HTTPException, Query, status
+from pydantic import BaseModel
 
 from openhands.app_server.config import depends_user_context, get_global_config
 from openhands.app_server.git.git_models import (
@@ -366,6 +367,7 @@ async def get_pr_status():
         'upstream_owner': 'OpenHands',
         'repo': repo,
         'fork_owner': fork_owner,
+        'issue': info.get('issue'),
     }
 
 
@@ -382,3 +384,18 @@ async def push_branch():
     from openhands.app_server.git.pr_flow import run_push_branch
 
     return run_push_branch()
+
+
+class IssueContextUpdate(BaseModel):
+    repository: str
+    issue_number: int
+    issue_url: str
+    issue_title: str
+
+
+@router.post('/issue-context')
+async def update_issue_context(issue: IssueContextUpdate):
+    from openhands.app_server.git.pr_flow import save_issue_context
+
+    save_issue_context(issue.model_dump())
+    return {'message': 'Issue context updated successfully'}

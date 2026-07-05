@@ -1,0 +1,6 @@
+{
+  "repository": "OpenHands/OpenHands",
+  "issue_number": 15117,
+  "issue_url": "https://github.com/OpenHands/OpenHands/issues/15117",
+  "issue_title": "LLM is_subscription can be client-declared via the main /api/v1/settings endpoint (agent_settings_diff)"
+}

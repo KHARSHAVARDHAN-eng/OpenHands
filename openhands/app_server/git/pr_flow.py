@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import threading
@@ -31,7 +32,34 @@ def get_poetry_path() -> str:
     return 'poetry'
 
 
+def get_issue_context() -> dict[str, Any]:
+    pr_dir = os.path.join(os.getcwd(), '.pr')
+    file_path = os.path.join(pr_dir, 'issue_context.json')
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, 'r') as f:
+                return json.load(f)
+        except Exception:
+            pass
+    # Fallback default
+    return {
+        'repository': 'OpenHands/OpenHands',
+        'issue_number': 15117,
+        'issue_url': 'https://github.com/OpenHands/OpenHands/issues/15117',
+        'issue_title': 'LLM is_subscription can be client-declared via the main /api/v1/settings endpoint (agent_settings_diff)',
+    }
+
+
+def save_issue_context(data: dict[str, Any]) -> None:
+    pr_dir = os.path.join(os.getcwd(), '.pr')
+    os.makedirs(pr_dir, exist_ok=True)
+    file_path = os.path.join(pr_dir, 'issue_context.json')
+    with open(file_path, 'w') as f:
+        json.dump(data, f, indent=2)
+
+
 def get_git_info() -> dict[str, Any]:
+    issue = get_issue_context()
     try:
         branch = subprocess.run(
             ['git', 'rev-parse', '--abbrev-ref', 'HEAD'], capture_output=True, text=True
@@ -83,6 +111,7 @@ def get_git_info() -> dict[str, Any]:
             'files_changed': files_changed,
             'commits_ahead': commits_ahead,
             'is_pushed': is_pushed,
+            'issue': issue,
         }
     except Exception as e:
         return {
@@ -93,6 +122,7 @@ def get_git_info() -> dict[str, Any]:
             'commits_ahead': 0,
             'is_pushed': False,
             'error': str(e),
+            'issue': issue,
         }
 
 
