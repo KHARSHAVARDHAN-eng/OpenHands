@@ -259,6 +259,15 @@ class OrgUpdate(BaseModel):
         self._normalize_agent_settings_diff()
         self._cleanup_empty_diff('agent_settings_diff', nested_key='llm')
         self._cleanup_empty_diff('conversation_settings_diff')
+
+        # Validate LLM settings using StrictLLM if provided
+        if self.agent_settings_diff is not None:
+            llm_diff = self.agent_settings_diff.get('llm')
+            if isinstance(llm_diff, dict):
+                from openhands.app_server.settings.llm_profiles import StrictLLM
+
+                StrictLLM.model_validate(llm_diff)
+
         return self
 
     def _normalize_agent_settings_diff(self) -> None:
