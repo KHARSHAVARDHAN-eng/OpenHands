@@ -213,3 +213,35 @@ def test_from_org_keeps_custom_base_url_that_is_not_provider_default():
         == 'https://company-proxy.internal/anthropic'
     )
     assert response.search_api_key == '****1234'
+
+
+def test_org_update_forbids_is_subscription_and_unknown_fields():
+    """OrgUpdate should reject invalid LLM fields in agent_settings_diff.llm."""
+    # Valid payload should load successfully
+    OrgUpdate.model_validate({
+        'agent_settings_diff': {
+            'llm': {'model': 'openai/gpt-4o', 'api_key': 'test-api-key'}
+        }
+    })
+
+    # Payload with is_subscription should be forbidden (raise ValidationError)
+    from pydantic import ValidationError
+    import pytest
+
+    with pytest.raises(ValidationError) as exc_info:
+        OrgUpdate.model_validate({
+            'agent_settings_diff': {
+                'llm': {'model': 'openai/gpt-4o', 'is_subscription': True}
+            }
+        })
+    assert 'is_subscription' in str(exc_info.value)
+
+    # Payload with unknown key should be forbidden (raise ValidationError)
+    with pytest.raises(ValidationError) as exc_info:
+        OrgUpdate.model_validate({
+            'agent_settings_diff': {
+                'llm': {'model': 'openai/gpt-4o', 'unknown_field_12345': 'value'}
+            }
+        })
+    assert 'unknown_field_12345' in str(exc_info.value)
+
