@@ -15,6 +15,8 @@ import { useConfig } from "#/hooks/query/use-config";
 import { displayErrorToast } from "#/utils/custom-toast-handlers";
 import { I18nKey } from "#/i18n/declaration";
 import { cn } from "#/utils/utils";
+import PRIcon from "#/icons/u-pr.svg?react";
+import { StyledTooltip } from "#/components/shared/buttons/styled-tooltip";
 
 export function Sidebar() {
   const { t } = useTranslation();
@@ -93,6 +95,20 @@ export function Sidebar() {
                 disabled={settings?.email_verified === false}
               />
             )}
+            <StyledTooltip content="PR Submission" placement="right">
+              <a
+                href="/pr-submission"
+                data-testid="pr-submission-button"
+                aria-label="PR Submission"
+                className={cn(
+                  "inline-flex items-center justify-center w-8 h-8 rounded-lg text-neutral-400 hover:text-neutral-200 transition-colors",
+                  pathname === "/pr-submission" &&
+                    "text-neutral-100 bg-neutral-800",
+                )}
+              >
+                <PRIcon width={24} height={24} />
+              </a>
+            </StyledTooltip>
           </div>
 
           <div className="flex flex-row md:flex-col md:items-center gap-[26px]">

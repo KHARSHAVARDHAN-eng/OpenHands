@@ -11,6 +11,7 @@ export default [
   route("information-request", "routes/information-request.tsx"),
   layout("routes/root-layout.tsx", [
     index("routes/home.tsx"),
+    route("pr-submission", "routes/pr-submission.tsx"),
     route("accept-tos", "routes/accept-tos.tsx"),
     route("launch", "routes/launch.tsx"),
     route("settings", "routes/settings.tsx", [

@@ -1,6 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-hot-toast";
+import { useAgentState } from "#/hooks/use-agent-state";
 
 import { useConversationId } from "#/hooks/use-conversation-id";
 import { useCommandStore } from "#/stores/command-store";
@@ -50,6 +52,24 @@ function AppContent() {
   const removeErrorMessage = useErrorMessageStore(
     (state) => state.removeErrorMessage,
   );
+
+  const { curAgentState } = useAgentState();
+
+  // Redirect to PR Submission after task finishes successfully
+  React.useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (curAgentState === AgentState.FINISHED) {
+      toast.success(
+        "Task completed successfully! Navigating to PR Submission...",
+      );
+      timer = setTimeout(() => {
+        navigate("/pr-submission");
+      }, 1500);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [curAgentState, navigate]);
 
   // 1. Cleanup Effect - runs when navigating to a different conversation
   React.useEffect(() => {

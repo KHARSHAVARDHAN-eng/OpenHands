@@ -329,3 +329,56 @@ async def search_suggested_tasks(
         next_page_id = encode_page_id(page + 1)
 
     return SuggestedTaskPage(items=paginated_tasks, next_page_id=next_page_id)
+
+
+@router.get('/pr-status')
+async def get_pr_status():
+    import subprocess
+
+    from openhands.app_server.git.pr_flow import get_git_info, global_pr_state
+
+    info = get_git_info()
+
+    # Parse fork remote details dynamically
+    fork_owner = 'KHARSHAVARDHAN-eng'
+    repo = 'OpenHands'
+    try:
+        remote_url = subprocess.run(
+            ['git', 'remote', 'get-url', 'origin'], capture_output=True, text=True
+        ).stdout.strip()
+        if 'github.com' in remote_url:
+            parts = remote_url.split('github.com/')[-1].replace('.git', '').split('/')
+            if len(parts) == 2:
+                fork_owner, repo = parts[0], parts[1]
+    except Exception:
+        pass
+
+    return {
+        'status': global_pr_state.status,
+        'checks': global_pr_state.checks,
+        'output': global_pr_state.output,
+        'branch': info.get('branch', 'unknown'),
+        'sha': info.get('sha', 'unknown'),
+        'is_clean': info.get('is_clean', False),
+        'files_changed': info.get('files_changed', []),
+        'commits_ahead': info.get('commits_ahead', 0),
+        'is_pushed': info.get('is_pushed', False),
+        'upstream_owner': 'OpenHands',
+        'repo': repo,
+        'fork_owner': fork_owner,
+    }
+
+
+@router.post('/verify-pr')
+async def verify_pr():
+    from openhands.app_server.git.pr_flow import start_verification
+
+    start_verification()
+    return {'message': 'Verification started'}
+
+
+@router.post('/push-branch')
+async def push_branch():
+    from openhands.app_server.git.pr_flow import run_push_branch
+
+    return run_push_branch()
