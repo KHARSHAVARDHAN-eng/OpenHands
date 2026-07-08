@@ -30,6 +30,7 @@ export default function LoginPage() {
     emailVerificationModalOpen,
     setEmailVerificationModalOpen,
     userId,
+    emailSendFailed,
   } = useEmailVerification();
 
   const { hasInvitation, buildOAuthStateData } = useInvitation();
@@ -108,6 +109,7 @@ export default function LoginPage() {
           }}
           userId={userId}
           wasRateLimited={wasRateLimited}
+          emailSendFailed={emailSendFailed}
         />
       )}
 

@@ -423,6 +423,62 @@ async def test_keycloak_callback_email_not_verified_missing_field(
 
 
 @pytest.mark.asyncio
+async def test_keycloak_callback_email_verification_failed_email_sending(
+    mock_request, mock_background_tasks, create_keycloak_user_info
+):
+    """Test keycloak_callback when email verification fails to send (SMTP/Keycloak error)."""
+    # Arrange
+    mock_verify_email = AsyncMock(side_effect=Exception("Keycloak SMTP error"))
+    mock_rate_limit = AsyncMock()
+    with (
+        patch('server.routes.auth.token_manager') as mock_token_manager,
+        patch('server.routes.email.verify_email', mock_verify_email),
+        patch('server.routes.auth.check_rate_limit_by_user_id', mock_rate_limit),
+        patch('server.routes.auth.UserStore') as mock_user_store,
+    ):
+        mock_token_manager.get_keycloak_tokens = AsyncMock(
+            return_value=('test_access_token', 'test_refresh_token')
+        )
+        mock_token_manager.get_user_info = AsyncMock(
+            return_value=create_keycloak_user_info(
+                sub='test_user_id',
+                preferred_username='test_user',
+                identity_provider='github',
+                email_verified=False,
+            )
+        )
+        mock_token_manager.store_idp_tokens = AsyncMock()
+
+        # Mock the user creation
+        mock_user = MagicMock()
+        mock_user.id = 'test_user_id'
+        mock_user.current_org_id = 'test_org_id'
+        mock_user_store.get_user_by_id = AsyncMock(return_value=mock_user)
+        mock_user_store.create_user = AsyncMock(return_value=mock_user)
+        mock_user_store.backfill_contact_name = AsyncMock()
+        mock_user_store.backfill_user_email = AsyncMock()
+
+        # Act
+        result = await keycloak_callback(
+            code='test_code',
+            state='test_state',
+            request=mock_request,
+            background_tasks=mock_background_tasks,
+            user_authorizer=create_mock_user_authorizer(),
+        )
+
+        # Assert
+        assert isinstance(result, RedirectResponse)
+        assert result.status_code == 302
+        assert 'email_verification_required=true' in result.headers['location']
+        assert 'user_id=test_user_id' in result.headers['location']
+        assert 'email_send_failed=true' in result.headers['location']
+        mock_verify_email.assert_called_once_with(
+            request=mock_request, user_id='test_user_id', is_auth_flow=True
+        )
+
+
+@pytest.mark.asyncio
 async def test_keycloak_callback_email_verification_rate_limited(
     mock_request, mock_background_tasks, create_keycloak_user_info
 ):

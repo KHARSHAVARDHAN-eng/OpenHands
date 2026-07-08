@@ -410,6 +410,7 @@ async def keycloak_callback(
         # 120s per IP; configurable via RATE_LIMIT_AUTH_VERIFY_EMAIL_* env vars).
         # This is separate from the manual resend limit (RATE_LIMIT_EMAIL_RESEND_*).
         rate_limited = False
+        email_send_failed = False
         try:
             await check_rate_limit_by_user_id(
                 request=request,
@@ -428,12 +429,19 @@ async def keycloak_callback(
                 )
             else:
                 raise
+        except Exception as e:
+            email_send_failed = True
+            logger.exception(
+                f'Failed to send verification email for user {user_id} during auth flow: {e}'
+            )
 
         verification_redirect_url = (
             f'{web_url}/login?email_verification_required=true&user_id={user_id}'
         )
         if rate_limited:
             verification_redirect_url = f'{verification_redirect_url}&rate_limited=true'
+        if email_send_failed:
+            verification_redirect_url = f'{verification_redirect_url}&email_send_failed=true'
 
         # Preserve invitation token so it can be included in OAuth state after verification
         if invitation_token:

@@ -17475,6 +17475,9 @@
     "uk": "Принаймні один постачальник ідентифікації має бути налаштований (наприклад, GitHub)",
     "ca": "S'ha de configurar almenys un proveïdor d'identitat (p. ex., GitHub)"
   },
+  "AUTH$EMAIL_SEND_FAILED": {
+    "en": "We encountered an issue sending the verification email. Please try resending."
+  },
   "AUTH$PLEASE_CHECK_EMAIL_TO_VERIFY": {
     "en": "Please check your email to verify your account.",
     "ja": "アカウントを確認するためにメールを確認してください。",

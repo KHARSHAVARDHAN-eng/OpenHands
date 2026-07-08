@@ -31,6 +31,7 @@ export function useEmailVerification() {
   const [hasDuplicatedEmail, setHasDuplicatedEmail] = React.useState(false);
   const [recaptchaBlocked, setRecaptchaBlocked] = React.useState(false);
   const [wasRateLimited, setWasRateLimited] = React.useState(false);
+  const [emailSendFailed, setEmailSendFailed] = React.useState(false);
   const [userId, setUserId] = React.useState<string | null>(null);
   const [lastSentTimestamp, setLastSentTimestamp] = React.useState<
     number | null
@@ -94,6 +95,13 @@ export function useEmailVerification() {
       shouldUpdate = true;
     }
 
+    const emailSendFailedParam = searchParams.get("email_send_failed");
+    if (emailSendFailedParam === "true") {
+      setEmailSendFailed(true);
+      searchParams.delete("email_send_failed");
+      shouldUpdate = true;
+    }
+
     if (userIdParam) {
       setUserId(userIdParam);
       searchParams.delete("user_id");
@@ -146,6 +154,7 @@ export function useEmailVerification() {
     hasDuplicatedEmail,
     recaptchaBlocked,
     wasRateLimited,
+    emailSendFailed,
     userId,
     resendEmailVerification: resendEmailVerificationMutation.mutate,
     isResendingVerification: resendEmailVerificationMutation.isPending,

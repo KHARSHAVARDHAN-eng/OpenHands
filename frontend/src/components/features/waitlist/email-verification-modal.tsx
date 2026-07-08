@@ -11,12 +11,14 @@ interface EmailVerificationModalProps {
   onClose: () => void;
   userId?: string | null;
   wasRateLimited?: boolean;
+  emailSendFailed?: boolean;
 }
 
 export function EmailVerificationModal({
   onClose,
   userId,
   wasRateLimited = false,
+  emailSendFailed = false,
 }: EmailVerificationModalProps) {
   const { t } = useTranslation();
   const {
@@ -35,18 +37,26 @@ export function EmailVerificationModal({
     resendButtonLabel = t(I18nKey.SETTINGS$RESEND_VERIFICATION);
   }
 
-  // Show different message when rate limited - user should check their inbox
-  // for the verification email sent earlier
-  const headerMessage = wasRateLimited
-    ? t(I18nKey.AUTH$CHECK_INBOX_FOR_VERIFICATION_EMAIL)
-    : t(I18nKey.AUTH$PLEASE_CHECK_EMAIL_TO_VERIFY);
+  // Show different message when rate limited or when email send failed
+  let headerMessage: string;
+  if (emailSendFailed) {
+    headerMessage = t(I18nKey.AUTH$EMAIL_SEND_FAILED);
+  } else if (wasRateLimited) {
+    headerMessage = t(I18nKey.AUTH$CHECK_INBOX_FOR_VERIFICATION_EMAIL);
+  } else {
+    headerMessage = t(I18nKey.AUTH$PLEASE_CHECK_EMAIL_TO_VERIFY);
+  }
 
   return (
     <ModalBackdrop onClose={onClose}>
       <ModalBody className="border border-tertiary">
         <OpenHandsLogo width={68} height={46} />
         <div className="flex flex-col gap-2 w-full items-center text-center">
-          <h1 className="text-2xl font-bold">{headerMessage}</h1>
+          <h1
+            className={`text-2xl font-bold ${emailSendFailed ? "text-danger" : ""}`}
+          >
+            {headerMessage}
+          </h1>
         </div>
 
         <div className="flex flex-col gap-3 w-full mt-4">
