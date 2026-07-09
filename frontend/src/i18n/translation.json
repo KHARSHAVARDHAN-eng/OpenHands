@@ -27456,5 +27456,32 @@
     "uk": "Запрошення скопійовано",
     "zh-CN": "邀请链接已复制",
     "zh-TW": "邀請連結已複製"
+  },
+  "DOWNLOAD$TITLE": {
+    "en": "Download File or Directory"
+  },
+  "DOWNLOAD$PATH_LABEL": {
+    "en": "Workspace Path"
+  },
+  "DOWNLOAD$PATH_PLACEHOLDER": {
+    "en": "e.g., src or package.json"
+  },
+  "DOWNLOAD$BUTTON": {
+    "en": "Download"
+  },
+  "DOWNLOAD$CANCEL": {
+    "en": "Cancel"
+  },
+  "DOWNLOAD$DOWNLOADING": {
+    "en": "Downloading..."
+  },
+  "DOWNLOAD$INSTRUCTION": {
+    "en": "Specify the file or directory path in the sandbox workspace to download. Directories will be zipped automatically."
+  },
+  "DOWNLOAD$ERROR_MESSAGE": {
+    "en": "Failed to download"
+  },
+  "DOWNLOAD$SUCCESS_MESSAGE": {
+    "en": "Download started successfully"
   }
 }
